@@ -1,0 +1,248 @@
+-- Wzerus Hub - Modern Key System with 24h Auto-Save (Hidden text)
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Tên file lưu trạng thái key (24 giờ)
+local SAVE_FILE = "WzerusHub_KeyData.json"
+local CORRECT_KEY = "WzeusHubKeyHdieHyperPuhusowhGskwhdjVdiwoejeo"
+local KEY_LINK = "https://link4m.org/EO62cg8"
+
+-- Hàm kiểm tra xem đã lưu key chưa và còn hạn 24h không
+local function hasValidKey()
+    if not (writefile and readfile and isfile) then return false end
+    if isfile(SAVE_FILE) then
+        local success, data = pcall(function()
+            return game:GetService("HttpService"):JSONDecode(readfile(SAVE_FILE))
+        end)
+        if success and data and data.ExpiryTime then
+            if os.time() < data.ExpiryTime then
+                return true
+            else
+                -- Hết hạn 24h thì xóa file cũ
+                pcall(function() delfile(SAVE_FILE) end)
+            end
+        end
+    end
+    return false
+end
+
+-- Hàm lưu key với thời hạn 24 giờ (86400 giây)
+local function saveKeyData()
+    if writefile and game:GetService("HttpService") then
+        pcall(function()
+            local data = {
+                ExpiryTime = os.time() + 86400 -- 24 giờ tới
+            }
+            writefile(SAVE_FILE, game:GetService("HttpService"):JSONEncode(data))
+        end)
+    end
+end
+
+-- Nếu đã lưu key hợp lệ thì load thẳng script chính luôn, không hiện bảng key nữa
+if hasValidKey() then
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Wzeus-NTH/Wzeusno1/main/Wzeus/nthzz"))()
+    return
+end
+
+-- Xóa menu cũ nếu còn tồn tại tránh bị trùng lặp
+if playerGui:FindFirstChild("WzerusKeySystem") then
+    playerGui.WzerusKeySystem:Destroy()
+end
+
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local UICorner = Instance.new("UICorner")
+local UIStroke = Instance.new("UIStroke")
+local Title = Instance.new("TextLabel")
+local Subtitle = Instance.new("TextLabel")
+
+local KeyInputBox = Instance.new("Frame")
+local KeyInput = Instance.new("TextBox")
+local UICorner_Input = Instance.new("UICorner")
+
+local ButtonContainer = Instance.new("Frame")
+
+local CheckBtn = Instance.new("TextButton")
+local UICorner_Check = Instance.new("UICorner")
+
+local GetKeyBtn = Instance.new("TextButton")
+local UICorner_Get = Instance.new("UICorner")
+
+local ErrorMsg = Instance.new("TextLabel")
+
+ScreenGui.Parent = playerGui
+ScreenGui.Name = "WzerusKeySystem"
+ScreenGui.ResetOnSpawn = false
+
+-- Khung chính to rộng
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+MainFrame.Position = UDim2.new(0.5, -210, 0.5, -125)
+MainFrame.Size = UDim2.new(0, 420, 0, 250)
+MainFrame.Active = true
+MainFrame.Draggable = true
+
+UICorner.CornerRadius = UDim.new(0, 14)
+UICorner.Parent = MainFrame
+
+-- Viền tím phát sáng
+UIStroke.Parent = MainFrame
+UIStroke.Color = Color3.fromRGB(138, 43, 226)
+UIStroke.Thickness = 1.5
+UIStroke.Transparency = 0.3
+
+-- Tiêu đề Wzerus Hub
+Title.Parent = MainFrame
+Title.BackgroundTransparency = 1
+Title.Position = UDim2.new(0, 0, 0, 20)
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.Font = Enum.Font.FredokaOne
+Title.Text = "Wzerus Hub"
+Title.TextColor3 = Color3.fromRGB(180, 100, 255)
+Title.TextSize = 26
+
+-- Phụ đề
+Subtitle.Parent = MainFrame
+Subtitle.BackgroundTransparency = 1
+Subtitle.Position = UDim2.new(0, 0, 0, 50)
+Subtitle.Size = UDim2.new(1, 0, 0, 15)
+Subtitle.Font = Enum.Font.GothamMedium
+Subtitle.Text = "SECURE AUTHENTICATION SYSTEM"
+Subtitle.TextColor3 = Color3.fromRGB(110, 110, 130)
+Subtitle.TextSize = 10
+
+-- Ô nhập Key
+KeyInputBox.Parent = MainFrame
+KeyInputBox.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+KeyInputBox.Position = UDim2.new(0.08, 0, 0, 85)
+KeyInputBox.Size = UDim2.new(0.84, 0, 0, 50)
+
+UICorner_Input.CornerRadius = UDim.new(0, 10)
+UICorner_Input.Parent = KeyInputBox
+
+KeyInput.Parent = KeyInputBox
+KeyInput.BackgroundTransparency = 1
+KeyInput.Position = UDim2.new(0.05, 0, 0, 0)
+KeyInput.Size = UDim2.new(0.9, 0, 1, 0)
+KeyInput.Font = Enum.Font.Gotham
+KeyInput.PlaceholderText = "Enter your key here..."
+KeyInput.PlaceholderColor3 = Color3.fromRGB(90, 90, 110)
+KeyInput.Text = ""
+KeyInput.TextColor3 = Color3.fromRGB(240, 240, 255)
+KeyInput.TextSize = 15
+KeyInput.ClearTextOnFocus = false
+
+-- Khu vực chứa 2 nút
+ButtonContainer.Parent = MainFrame
+ButtonContainer.BackgroundTransparency = 1
+ButtonContainer.Position = UDim2.new(0.08, 0, 0, 150)
+ButtonContainer.Size = UDim2.new(0.84, 0, 0, 45)
+
+-- Nút Check Key
+CheckBtn.Parent = ButtonContainer
+CheckBtn.BackgroundColor3 = Color3.fromRGB(110, 38, 204)
+CheckBtn.Position = UDim2.new(0, 0, 0, 0)
+CheckBtn.Size = UDim2.new(0.48, 0, 1, 0)
+CheckBtn.Font = Enum.Font.GothamBold
+CheckBtn.Text = "CHECK KEY"
+CheckBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CheckBtn.TextSize = 14
+
+UICorner_Check.CornerRadius = UDim.new(0, 10)
+UICorner_Check.Parent = CheckBtn
+
+-- Nút Get Key
+GetKeyBtn.Parent = ButtonContainer
+GetKeyBtn.BackgroundColor3 = Color3.fromRGB(45, 35, 65)
+GetKeyBtn.Position = UDim2.new(0.52, 0, 0, 0)
+GetKeyBtn.Size = UDim2.new(0.48, 0, 1, 0)
+GetKeyBtn.Font = Enum.Font.GothamBold
+GetKeyBtn.Text = "GET KEY"
+GetKeyBtn.TextColor3 = Color3.fromRGB(200, 150, 255)
+GetKeyBtn.TextSize = 14
+
+UICorner_Get.CornerRadius = UDim.new(0, 10)
+UICorner_Get.Parent = GetKeyBtn
+
+-- Thông báo trạng thái
+ErrorMsg.Parent = MainFrame
+ErrorMsg.BackgroundTransparency = 1
+ErrorMsg.Position = UDim2.new(0, 0, 0, 205)
+ErrorMsg.Size = UDim2.new(1, 0, 0, 20)
+ErrorMsg.Font = Enum.Font.GothamMedium
+ErrorMsg.Text = ""
+ErrorMsg.TextColor3 = Color3.fromRGB(255, 80, 80)
+ErrorMsg.TextSize = 13
+
+-- Hiệu ứng Hover
+CheckBtn.MouseEnter:Connect(function()
+    TweenService:Create(CheckBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(135, 50, 240)}):Play()
+end)
+CheckBtn.MouseLeave:Connect(function()
+    TweenService:Create(CheckBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(110, 38, 204)}):Play()
+end)
+
+GetKeyBtn.MouseEnter:Connect(function()
+    TweenService:Create(GetKeyBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 45, 85)}):Play()
+end)
+GetKeyBtn.MouseLeave:Connect(function()
+    TweenService:Create(GetKeyBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(45, 35, 65)}):Play()
+end)
+
+-- Chức năng nút Get Key với link link4m của bạn
+GetKeyBtn.MouseButton1Click:Connect(function()
+    if setclipboard then
+        setclipboard(KEY_LINK)
+        ErrorMsg.TextColor3 = Color3.fromRGB(100, 200, 255)
+        ErrorMsg.Text = "Key link copied to clipboard!"
+    else
+        ErrorMsg.TextColor3 = Color3.fromRGB(255, 200, 80)
+        ErrorMsg.Text = "Your executor does not support clipboard."
+    end
+end)
+
+-- Tự động xóa thông báo lỗi cũ khi click vào ô nhập
+KeyInput.Focused:Connect(function()
+    if ErrorMsg.Text == "Invalid Key! Please try again." then
+        ErrorMsg.Text = ""
+    end
+end)
+
+-- Xử lý Logic Kiểm tra Key
+CheckBtn.MouseButton1Click:Connect(function()
+    if KeyInput.Text == CORRECT_KEY then
+        ErrorMsg.TextColor3 = Color3.fromRGB(80, 255, 120)
+        ErrorMsg.Text = "Success! Loading script..."
+        
+        -- Lưu key vào hệ thống trong 24 giờ
+        saveKeyData()
+        
+        TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2.new(0, 0, 0, 0), Transparency = 1}):Play()
+        task.wait(0.3)
+        ScreenGui:Destroy()
+        
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Wzeus-NTH/Wzeusno1/main/Wzeus/nthzz"))()
+    else
+        ErrorMsg.TextColor3 = Color3.fromRGB(255, 80, 80)
+        ErrorMsg.Text = "Invalid Key! Please try again."
+        
+        -- Tự động xóa chữ ngay lập tức tại thời điểm bắt đầu lắc
+        KeyInput.Text = ""
+        
+        -- Hiệu ứng lắc (Shake) mượt mà
+        local originalPos = MainFrame.Position
+        local tweenInfo = TweenInfo.new(0.04, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+        
+        TweenService:Create(MainFrame, tweenInfo, {Position = originalPos + UDim2.new(0, -8, 0, 0)}):Play()
+        task.wait(0.04)
+        TweenService:Create(MainFrame, tweenInfo, {Position = originalPos + UDim2.new(0, 8, 0, 0)}):Play()
+        task.wait(0.04)
+        TweenService:Create(MainFrame, tweenInfo, {Position = originalPos + UDim2.new(0, -5, 0, 0)}):Play()
+        task.wait(0.04)
+        TweenService:Create(MainFrame, tweenInfo, {Position = originalPos + UDim2.new(0, 5, 0, 0)}):Play()
+        task.wait(0.04)
+        TweenService:Create(MainFrame, tweenInfo, {Position = originalPos}):Play()
+    end
+end)
